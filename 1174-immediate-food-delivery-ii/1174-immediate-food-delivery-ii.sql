@@ -1,6 +1,18 @@
-# Write your MySQL query statement below
-SELECT 
-    ROUND(SUM(IF(min_order_date = min_customer_pref_delivery_date, 1, 0)) * 100 / COUNT(*), 2) AS immediate_percentage 
-FROM (SELECT MIN(order_date) AS min_order_date, MIN(customer_pref_delivery_date) AS min_customer_pref_delivery_date 
-    FROM Delivery 
-    GROUP BY customer_id) AS min_delivery_table;
+-- SELECT 
+--     *,
+    -- CASE 
+    --     WHEN order_date = customer_pref_delivery_date THEN "immediate"
+    --     ELSE "scheduled"
+    -- END AS "delivey_type"
+--  FROM Delivery
+--  GROUP BY customer_id 
+--  HAVING order_date = MIN(order_date)
+SELECT ROUND(AVG(IF(customer_pref_delivery_date=first_order,100,0)),2) AS immediate_percentage  FROM
+(SELECT 
+    *,
+    MIN(order_date) OVER(PARTITION BY customer_id) AS first_order
+
+FROM
+    Delivery) t1
+WHERE 
+    order_date = first_order
